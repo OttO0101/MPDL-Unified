@@ -168,6 +168,12 @@ Fecha de generación: ${currentDate}
       content += `   - No hay productos registrados\n`
     }
 
+    if (inventory.photo_url) {
+      content += `
+   FOTO DEL DISPOSITIVO:
+   ${inventory.photo_url}\n`
+    }
+
     content += `\n`
   })
 
