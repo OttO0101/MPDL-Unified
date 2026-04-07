@@ -9,7 +9,11 @@ export const metadata: Metadata = {
   title: "Sistema de Inventarios MPDL",
   description: "Sistema de Gestión de Inventarios de Productos de Limpieza - MPDL",
   manifest: "/manifest.json",
-    generator: 'v0.dev'
+  generator: 'v0.dev',
+  icons: {
+    icon: '/favicon.ico',
+    apple: '/icon.png',
+  },
 }
 
 export function generateViewport(): Viewport {
