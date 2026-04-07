@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Input } from "@/components/ui/input"
-import { ArrowLeft, Package, Save, Download } from "lucide-react"
+import { ArrowLeft, Package, Save, Download, Camera, X } from "lucide-react"
 import { AppLogo } from "@/components/core/AppLogo"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import {
@@ -20,6 +20,7 @@ import {
   LAC_CONSOLIDATED_INVENTORY_DEVICE,
 } from "@/lib/constants"
 import { getLatestInventory, getLacConsolidated, saveInventory } from "@/actions/get-inventory"
+import { savePhotoUrl, getPhotoUrl, deletePhotoUrl } from "@/actions/manage-photos"
 import { generateCleaningInventoryPdf } from "@/actions/generate-pdf"
 import { toast } from "sonner"
 
@@ -42,6 +43,9 @@ export default function ProductosLimpieza({ onBack, showBackButton = true }: Pro
   const [error, setError] = useState<string | null>(null)
   const [lacSummaryQuantities, setLacSummaryQuantities] = useState<Record<string, number>>({})
   const [hasLoadedPrevious, setHasLoadedPrevious] = useState(false)
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null)
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false)
+  const [photoFile, setPhotoFile] = useState<File | null>(null)
 
   const getQuantityOptions = (productId: string, device: string): string[] => {
     if (device === "MM" || device === "MF") {
@@ -58,13 +62,90 @@ export default function ProductosLimpieza({ onBack, showBackButton = true }: Pro
     return PRODUCT_SPECIFIC_QUANTITIES[productId] || ["0", "1", "2", "3", "4", "5"]
   }
 
-  const handleLoadPrevious = async () => {
+  const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      setPhotoFile(file)
+      const reader = new FileReader()
+      reader.onload = (event) => {
+        if (event.target?.result) {
+          setPhotoUrl(event.target.result as string)
+        }
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
+  const handlePhotoUpload = async () => {
+    if (!photoFile || !selectedDevice) {
+      toast.error("Por favor selecciona una foto")
+      return
+    }
+
+    setIsUploadingPhoto(true)
+    try {
+      const formData = new FormData()
+      formData.append('file', photoFile)
+      formData.append('device', selectedDevice)
+
+      const response = await fetch('/api/upload-photo', {
+        method: 'POST',
+        body: formData,
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || 'Error al subir la foto')
+      }
+
+      const data = await response.json()
+      setPhotoUrl(data.url)
+      setPhotoFile(null)
+
+      const saveResult = await savePhotoUrl(selectedDevice, data.url)
+      if (saveResult.success) {
+        toast.success("Foto guardada correctamente")
+      } else {
+        toast.error(saveResult.error || "Error al guardar la foto")
+      }
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Error inesperado al subir la foto"
+      setError(errorMessage)
+      toast.error(errorMessage)
+    } finally {
+      setIsUploadingPhoto(false)
+    }
+  }
+
+  const handleDeletePhoto = async () => {
+    if (!selectedDevice) return
+
+    try {
+      await deletePhotoUrl(selectedDevice)
+      setPhotoUrl(null)
+      setPhotoFile(null)
+      toast.success("Foto eliminada correctamente")
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "Error al eliminar la foto"
+      toast.error(errorMessage)
+    }
+  }
+
+  const handleLoadPreviousAndPhoto = async () => {
     if (!selectedDevice) return
 
     setIsLoading(true)
     setError(null)
 
     try {
+      // Load photo
+      if (selectedDevice !== LAC_CONSOLIDATED_INVENTORY_DEVICE) {
+        const photoResult = await getPhotoUrl(selectedDevice)
+        if (photoResult.success && photoResult.photoUrl) {
+          setPhotoUrl(photoResult.photoUrl)
+        }
+      }
+
       if (selectedDevice === LAC_CONSOLIDATED_INVENTORY_DEVICE) {
         const result = await getLacConsolidated()
         if (result.success && result.quantities) {
@@ -222,7 +303,7 @@ export default function ProductosLimpieza({ onBack, showBackButton = true }: Pro
 
             {selectedDevice && (
               <Button
-                onClick={handleLoadPrevious}
+                onClick={handleLoadPreviousAndPhoto}
                 disabled={isLoading}
                 variant="outline"
                 className="w-full bg-transparent"
@@ -230,6 +311,73 @@ export default function ProductosLimpieza({ onBack, showBackButton = true }: Pro
                 <Download className="h-4 w-4 mr-2" />
                 {isLoading ? "Cargando..." : "Cargar Inventario Anterior"}
               </Button>
+            )}
+
+            {selectedDevice && selectedDevice !== LAC_CONSOLIDATED_INVENTORY_DEVICE && (
+              <Card className="bg-blue-50 border-blue-200">
+                <CardContent className="pt-6 space-y-4">
+                  <div className="flex items-center gap-2 mb-4">
+                    <Camera className="h-5 w-5 text-blue-600" />
+                    <h3 className="font-semibold text-blue-900">Foto del Dispositivo</h3>
+                  </div>
+
+                  {photoUrl && (
+                    <div className="relative">
+                      <img
+                        src={photoUrl}
+                        alt={`Foto de ${selectedDevice}`}
+                        className="w-full h-48 object-cover rounded-lg border-2 border-blue-300"
+                      />
+                      {photoFile && (
+                        <div className="absolute top-2 right-2 flex gap-2">
+                          <Button
+                            size="sm"
+                            onClick={handlePhotoUpload}
+                            disabled={isUploadingPhoto}
+                            className="bg-green-600 hover:bg-green-700"
+                          >
+                            {isUploadingPhoto ? "Subiendo..." : "Guardar"}
+                          </Button>
+                        </div>
+                      )}
+                      {!photoFile && (
+                        <button
+                          onClick={handleDeletePhoto}
+                          className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-2 transition-colors"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      )}
+                    </div>
+                  )}
+
+                  {!photoUrl && (
+                    <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-blue-300 rounded-lg cursor-pointer hover:bg-blue-100 transition-colors">
+                      <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                        <Camera className="h-8 w-8 text-blue-600 mb-2" />
+                        <p className="text-sm text-blue-900 font-medium">Haz clic para seleccionar una foto</p>
+                        <p className="text-xs text-blue-700">PNG, JPG, GIF hasta 10MB</p>
+                      </div>
+                      <input
+                        type="file"
+                        className="hidden"
+                        accept="image/*"
+                        onChange={handlePhotoSelect}
+                      />
+                    </label>
+                  )}
+
+                  {photoFile && !photoUrl && (
+                    <Button
+                      onClick={handlePhotoUpload}
+                      disabled={isUploadingPhoto}
+                      className="w-full"
+                    >
+                      {isUploadingPhoto ? "Subiendo..." : "Subir Foto"}
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
             )}
 
             {selectedDevice && (
