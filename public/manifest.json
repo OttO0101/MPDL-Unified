@@ -1,6 +1,6 @@
 {
-  "name": "Sistema de Inventarios MPDL",
-  "short_name": "Inventarios MPDL",
+  "name": "PRODUCTOS",
+  "short_name": "PRODUCTOS",
   "description": "Sistema de Gestión de Inventarios de Productos de Limpieza - MPDL",
   "start_url": "/",
   "display": "standalone",

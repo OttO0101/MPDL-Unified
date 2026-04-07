@@ -6,7 +6,7 @@ import "./globals.css"
 const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
-  title: "Sistema de Inventarios MPDL",
+  title: "PRODUCTOS",
   description: "Sistema de Gestión de Inventarios de Productos de Limpieza - MPDL",
   manifest: "/manifest.json",
   generator: 'v0.dev',
