@@ -14,7 +14,7 @@ export function AppLogo({ size = "medium", className }: AppLogoProps) {
 
   return (
     <div className={cn("flex items-center justify-center", className)}>
-      <img src="/mpdl-logo.png" alt="MPDL Logo" className={cn("object-contain", sizeClasses[size])} />
+      <img src="/icon-192x192.png" alt="PRODUCTOS" className={cn("object-contain", sizeClasses[size])} />
     </div>
   )
 }

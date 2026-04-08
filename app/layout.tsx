@@ -12,7 +12,13 @@ export const metadata: Metadata = {
   generator: 'v0.dev',
   icons: {
     icon: '/favicon.ico',
-    apple: '/icon.png',
+    apple: '/apple-touch-icon.png',
+    shortcut: '/favicon.ico',
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'PRODUCTOS',
   },
 }
 
