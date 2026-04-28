@@ -17,8 +17,8 @@ export function AppLogo({ size = "medium", className = "", variant = "full" }: A
     return (
       <div className={`${sizeClasses[size]} ${className} flex items-center justify-center glow-effect rounded-xl`}>
         <img
-          src="/icon-512x512.png"
-          alt="PRODUCTOS"
+          src="/mpdl-cleaning-logo.png"
+          alt="MPDL Productos de Limpieza"
           className="w-full h-full object-contain filter drop-shadow-lg transition-all duration-300 hover:drop-shadow-2xl hover:scale-105"
         />
       </div>
@@ -30,8 +30,8 @@ export function AppLogo({ size = "medium", className = "", variant = "full" }: A
       className={`${sizeClasses[size]} ${className} rounded-2xl overflow-hidden flex items-center justify-center bg-gradient-to-br from-white via-slate-50 to-blue-50 shadow-2xl border border-white/50 glow-effect transition-all duration-500 hover:scale-105 hover:shadow-3xl`}
     >
       <img
-        src="/icon-512x512.png"
-        alt="PRODUCTOS"
+        src="/mpdl-cleaning-logo.png"
+        alt="MPDL - Productos de Limpieza"
         className="w-full h-full object-contain p-2 filter drop-shadow-md transition-all duration-300"
       />
     </div>
