@@ -81,7 +81,7 @@ export default function HomePage() {
               <AppLogo size="large" />
             </div>
             <div>
-              <h1 className="text-4xl font-bold text-gradient mb-2">Gestión de productos de Limpieza MPDL</h1>
+              <h1 className="text-4xl font-bold text-gradient mb-2">Gestión de Productos de Limpieza MPDL</h1>
               <p className="text-lg text-slate-600">GPL - Movimiento por la Paz</p>
             </div>
           </div>
